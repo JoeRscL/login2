@@ -27,14 +27,10 @@
 			<div><small class="js-error js-error-lastname text-danger"></small></div>
 
 			<div class="input-group mt-3">
-			  <span class="input-group-text" id="basic-addon1"><i class="bi bi-gender-ambiguous"></i></span>
-			  <select class="form-select" name="gender">
-			  	  <option selected value="">--Select Gender--</option>
-				  <option value="Male">Male</option>
-				  <option value="Female">Female</option>
-			  </select>
+			  <span class="input-group-text" id="basic-addon1"><i class="bi bi-person"></i></span>
+			  <input name="username" type="text" class="form-control p-3" placeholder="Username" >
 			</div>
-			<div><small class="js-error js-error-gender text-danger"></small></div>
+			<div><small class="js-error js-error-username text-danger"></small></div>
 			
 			<div class="input-group mt-3">
 			  <span class="input-group-text" id="basic-addon1"><i class="bi bi-envelope"></i></span>
@@ -54,7 +50,7 @@
 			</div>
 
 			<div class="progress mt-3 d-none">
-			  <div class="progress-bar" role="progressbar" style="width: 50%;" >Working... 25%</div>
+			  <div class="progress-bar" role="progressbar" style="width: 50%;">Working... 25%</div>
 			</div>
 
 			<button class="mt-3 btn btn-primary col-12">Signup</button>
@@ -79,10 +75,9 @@
 
 			var inputs = document.querySelectorAll("form input, form select");
 			let myform = new FormData();
-			myform.append('data_type',data_type);
+			myform.append('data_type', data_type);
 
 			for (var i = 0; i < inputs.length; i++) {
-
 				myform.append(inputs[i].name, inputs[i].value);
 			}
 
@@ -122,7 +117,7 @@
 				document.querySelector(".progress-bar").innerHTML = "Working..." + percent + "%";
 			});
 
-			ajax.open('post','ajax.php', true);
+			ajax.open('post', 'ajax.php', true);
 			ajax.send(form);
 		},
 

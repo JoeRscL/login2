@@ -1,112 +1,145 @@
 <?php 
+require 'functions.php';
 
-	require 'functions.php';
-
-	if(!is_logged_in())
-	{
-		redirect('login.php');
-	}
-
-	$id = $_GET['id'] ?? $_SESSION['PROFILE']['id'];
-
+// Jika pengguna sudah login, ambil data profil
+if (is_logged_in()) {
+	$id = $_SESSION['PROFILE']['id'];
 	$row = db_query("select * from users where id = :id limit 1", ['id' => $id]);
-
-	if($row)
-	{
+	if ($row) {
 		$row = $row[0];
 	}
+}
+
+// Proses signup
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POST['data_type'] === 'signup') {
+	$info = [];
+	// Validasi firstname
+	if (empty($_POST['firstname'])) {
+		$info['errors']['firstname'] = "A first name is required";
+	} else if (!preg_match("/^[\p{L}]+$/", $_POST['firstname'])) {
+		$info['errors']['firstname'] = "First name can't have special characters or spaces and numbers";
+	}
+
+	// Validasi lastname
+	if (empty($_POST['lastname'])) {
+		$info['errors']['lastname'] = "A last name is required";
+	} else if (!preg_match("/^[\p{L}]+$/", $_POST['lastname'])) {
+		$info['errors']['lastname'] = "Last name can't have special characters or spaces and numbers";
+	}
+
+	// Validasi email
+	if (empty($_POST['email'])) {
+		$info['errors']['email'] = "An email is required";
+	} else if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
+		$info['errors']['email'] = "Email is not valid";
+	}
+
+	// Validasi username
+	if (empty($_POST['username'])) {
+		$info['errors']['username'] = "A username is required";
+	}
+
+	// Validasi password
+	if (empty($_POST['password'])) {
+		$info['errors']['password'] = "A password is required";
+	} else if ($_POST['password'] !== $_POST['retype_password']) {
+		$info['errors']['password'] = "Passwords don't match";
+	} else if (strlen($_POST['password']) < 8) {
+		$info['errors']['password'] = "Password must be at least 8 characters long";
+	}
+
+	if (empty($info['errors'])) {
+		// Simpan ke database
+		$arr = [];
+		$arr['firstname'] = $_POST['firstname'];
+		$arr['lastname'] = $_POST['lastname'];
+		$arr['email'] = $_POST['email'];
+		$arr['username'] = $_POST['username'];
+		$arr['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
+		$arr['date'] = date("Y-m-d H:i:s");
+
+		db_query("insert into users (firstname, lastname, username, password, date, email) values (:firstname, :lastname, :username, :password, :date, :email)", $arr);
+
+		$info['success'] = true;
+	}
+}
 
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Profile</title>
+	<title>User Profile</title>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap-icons.css">
-	<style>
-		/* Styling button untuk membuatnya lebih menarik */
-		.btn-custom {
-			border-radius: 25px;
-			padding: 0.5rem 1.5rem;
-			font-weight: bold;
-			border: none; /* Menghilangkan border */
-			transition: all 0.3s ease;
-			background: linear-gradient(135deg, #6d5efc, #e14eca);
-			color: white;
-			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-			margin: 10px; /* Tambahkan margin untuk memisahkan tombol */
-		}
-
-		.btn-custom:hover {
-			background: linear-gradient(135deg, #e14eca, #ff6f91);
-			box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-			transform: translateY(-2px);
-		}
-
-		.btn-custom:active {
-			transform: translateY(0);
-			box-shadow: none;
-		}
-
-		.btn-warning {
-			background: #f0ad4e;
-			color: #fff;
-		}
-
-		.btn-warning:hover {
-			background: #ec971f;
-		}
-
-		/* Menghilangkan garis penghubung antar tombol */
-		.btn {
-			border: none; /* Menghilangkan border */
-			box-shadow: none; /* Menghilangkan shadow jika ada */
-		}
-	</style>
 </head>
 <body>
 
-	<?php if(!empty($row)):?>
-		<div class="row col-lg-8 border rounded mx-auto mt-5 p-2 shadow-lg">
-			<div class="col-md-4 text-center">
-				<img src="<?=get_image($row['image'])?>" class="img-fluid rounded" style="width: 180px;height:180px;object-fit: cover;">
-				<div class="mt-3">
-					<?php if(user('id') == $row['id']):?>
+	<div class="container mt-5">
+		<?php if (isset($row)): ?>
+			<div class="row col-lg-8 border rounded mx-auto mt-5 p-2 shadow-lg">
+				<div class="col-md-4 text-center">
+					<img src="<?= get_image($row['image']) ?>" class="img-fluid rounded" style="width: 180px; height: 180px; object-fit: cover;">
+					<div class="mt-3">
 						<a href="profile-edit.php">
 							<button class="mx-auto m-1 btn btn-custom">Edit</button>
 						</a>
-						<!-- Tombol Delete dengan event JavaScript -->
-						<button class="mx-auto m-1 btn btn-warning btn-custom" onclick="confirmDelete()">Delete</button>
+						<button class="mx-auto m-1 btn btn-warning" onclick="confirmDelete()">Delete</button>
 						<a href="logout.php">
-							<button class="mx-auto m-1 btn btn-info btn-custom">Logout</button>
+							<button class="mx-auto m-1 btn btn-info">Logout</button>
 						</a>
-					<?php endif;?>
+					</div>
+				</div>
+				<div class="col-md-8">
+					<div class="h2">User Profile</div>
+					<table class="table table-striped">
+						<tr><th colspan="2">User Details:</th></tr>
+						<tr><th><i class="bi bi-envelope"></i> Email</th><td><?= esc($row['email']) ?></td></tr>
+						<tr><th><i class="bi bi-person-circle"></i> First name</th><td><?= esc($row['firstname']) ?></td></tr>
+						<tr><th><i class="bi bi-person-square"></i> Last name</th><td><?= esc($row['lastname']) ?></td></tr>
+						<tr><th><i class="bi bi-person"></i> Username</th><td><?= esc($row['username']) ?></td></tr> <!-- Menampilkan Username -->
+					</table>
 				</div>
 			</div>
-			<div class="col-md-8">
-				<div class="h2">User Profile</div>
-				<table class="table table-striped">
-					<tr><th colspan="2">User Details:</th></tr>
-					<tr><th><i class="bi bi-envelope"></i> Email</th><td><?=esc($row['email'])?></td></tr>
-					<tr><th><i class="bi bi-person-circle"></i> First name</th><td><?=esc($row['firstname'])?></td></tr>
-					<tr><th><i class="bi bi-person-square"></i> Last name</th><td><?=esc($row['lastname'])?></td></tr>
-					<tr><th><i class="bi bi-gender-ambiguous"></i> Gender</th><td><?=esc($row['gender'])?></td></tr>
-				</table>
+		<?php else: ?>
+			<div class="col-md-8 mx-auto">
+				<h2>Signup</h2>
+				<form method="post" onsubmit="myaction.collect_data(event, 'signup')">
+					<div class="input-group mt-3">
+						<span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+						<input name="firstname" type="text" class="form-control" placeholder="First name" required>
+					</div>
+					<div class="input-group mt-3">
+						<span class="input-group-text"><i class="bi bi-person-square"></i></span>
+						<input name="lastname" type="text" class="form-control" placeholder="Last name" required>
+					</div>
+					<div class="input-group mt-3">
+						<span class="input-group-text"><i class="bi bi-person"></i></span>
+						<input name="username" type="text" class="form-control" placeholder="Username" required>
+					</div>
+					<div class="input-group mt-3">
+						<span class="input-group-text"><i class="bi bi-envelope"></i></span>
+						<input name="email" type="text" class="form-control" placeholder="Email" required>
+					</div>
+					<div class="input-group mt-3">
+						<span class="input-group-text"><i class="bi bi-key"></i></span>
+						<input name="password" type="password" class="form-control" placeholder="Password" required>
+					</div>
+					<div class="input-group mt-3">
+						<span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+						<input name="retype_password" type="password" class="form-control" placeholder="Retype Password" required>
+					</div>
+					<button class="mt-3 btn btn-primary col-12">Signup</button>
+				</form>
 			</div>
-		</div>
-	<?php else:?>
-		<div class="text-center alert alert-danger">That profile was not found</div>
-		<a href="index.php">
-			<button class="btn btn-primary m-4">Home</button>
-		</a>
-	<?php endif;?>
+		<?php endif; ?>
+	</div>
 
 	<script>
 		function confirmDelete() {
 			if (confirm("Are you sure you want to delete this account?")) {
-				// Jika user memilih OK, lakukan penghapusan
 				deleteAccount(<?=$row['id']?>);
 			}
 		}
