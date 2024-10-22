@@ -1,184 +1,154 @@
 <?php 
-require 'functions.php';
 
-<<<<<<< HEAD
-// Jika pengguna sudah login, ambil data profil
+require 'functions.php'; 
+
 if (is_logged_in()) {
-	$id = $_SESSION['PROFILE']['id'];
-	$row = db_query("select * from users where id = :id limit 1", ['id' => $id]);
-	if ($row) {
-=======
-	require 'functions.php';
+	$id = $_SESSION['PROFILE']['id']; 
 
-	if(!is_logged_in())
-	{
+	$row = db_query("SELECT * FROM users WHERE id = :id LIMIT 1", ['id' => $id]);
+
+	if ($row) {
+		$row = $row[0]; 
+	} else {
 		redirect('login.php');
 	}
-
-	$id = $_GET['id'] ?? $_SESSION['PROFILE']['id'];
-
-	$row = db_query("select * from users where id = :id limit 1",['id'=>$id]);
-
-	if($row)
-	{
->>>>>>> parent of 6ea3835 (mantap)
-		$row = $row[0];
-	}
-}
-
-// Proses signup
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POST['data_type'] === 'signup') {
-	$info = [];
-	// Validasi firstname
-	if (empty($_POST['firstname'])) {
-		$info['errors']['firstname'] = "A first name is required";
-	} else if (!preg_match("/^[\p{L}]+$/", $_POST['firstname'])) {
-		$info['errors']['firstname'] = "First name can't have special characters or spaces and numbers";
-	}
-
-	// Validasi lastname
-	if (empty($_POST['lastname'])) {
-		$info['errors']['lastname'] = "A last name is required";
-	} else if (!preg_match("/^[\p{L}]+$/", $_POST['lastname'])) {
-		$info['errors']['lastname'] = "Last name can't have special characters or spaces and numbers";
-	}
-
-	// Validasi email
-	if (empty($_POST['email'])) {
-		$info['errors']['email'] = "An email is required";
-	} else if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
-		$info['errors']['email'] = "Email is not valid";
-	}
-
-	// Validasi username
-	if (empty($_POST['username'])) {
-		$info['errors']['username'] = "A username is required";
-	}
-
-	// Validasi password
-	if (empty($_POST['password'])) {
-		$info['errors']['password'] = "A password is required";
-	} else if ($_POST['password'] !== $_POST['retype_password']) {
-		$info['errors']['password'] = "Passwords don't match";
-	} else if (strlen($_POST['password']) < 8) {
-		$info['errors']['password'] = "Password must be at least 8 characters long";
-	}
-
-	if (empty($info['errors'])) {
-		// Simpan ke database
-		$arr = [];
-		$arr['firstname'] = $_POST['firstname'];
-		$arr['lastname'] = $_POST['lastname'];
-		$arr['email'] = $_POST['email'];
-		$arr['username'] = $_POST['username'];
-		$arr['password'] = password_hash($_POST['password'], PASSWORD_DEFAULT);
-		$arr['date'] = date("Y-m-d H:i:s");
-
-		db_query("insert into users (firstname, lastname, username, password, date, email) values (:firstname, :lastname, :username, :password, :date, :email)", $arr);
-
-		$info['success'] = true;
-	}
+} else {
+	redirect('login.php');
 }
 
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>User Profile</title>
+	<title>Profile</title>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap-icons.css">
+	<style>
+		body {
+			background: linear-gradient(to right, #e0f7fa, #ffffff); 
+			font-family: 'Arial', sans-serif;
+		}
+
+		.container {
+			margin-top: 50px;
+		}
+
+		.profile-card {
+			background-color: white;
+			border-radius: 10px;
+			padding: 20px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+		}
+
+		.btn-custom {
+			border-radius: 25px;
+			padding: 0.5rem 1.5rem;
+			font-weight: bold;
+			border: none;
+			transition: all 0.3s ease;
+			color: white;
+			margin: 10px 5px; 
+			position: relative;
+			overflow: hidden; 
+		}
+
+		.btn-custom::before {
+			content: '';
+			position: absolute;
+			background: rgba(255, 255, 255, 0.3); 
+			width: 300%;
+			height: 300%;
+			top: -50%;
+			left: -100%;
+			transform: translate(0, 0) rotate(45deg);
+			transition: all 0.5s ease;
+			z-index: 0;
+		}
+
+		.btn-custom:hover::before {
+			transform: translate(100%, -100%) rotate(45deg); 
+		}
+
+		.btn-custom:hover {
+			color: #fff; 
+		}
+
+		.btn-primary {
+			background: linear-gradient(135deg, #6d5efc, #e14eca);
+		}
+		.btn-primary:hover {
+			background: linear-gradient(135deg, #e14eca, #ff6f91);
+		}
+		
+		.btn-warning {
+			background: #f0ad4e;
+			color: #fff;
+		}
+		.btn-warning:hover {
+			background: #ec971f;
+		}
+
+		.img-fluid {
+			border-radius: 10px;
+		}
+
+		.table th {
+			background-color: #f8f9fa;
+		}
+
+		.table-striped tbody tr:nth-of-type(odd) {
+			background-color: #f9f9f9;
+		}
+
+		.table-striped tbody tr:hover {
+			background-color: #e9ecef;
+		}
+	</style>
 </head>
 <body>
 
-<<<<<<< HEAD
-	<div class="container mt-5">
+	<div class="container">
 		<?php if (isset($row)): ?>
-			<div class="row col-lg-8 border rounded mx-auto mt-5 p-2 shadow-lg">
-				<div class="col-md-4 text-center">
-					<img src="<?= get_image($row['image']) ?>" class="img-fluid rounded" style="width: 180px; height: 180px; object-fit: cover;">
-					<div class="mt-3">
-=======
-	<div class="text-center p-1"><a href="users.php">All users</a></div>
-
-	<?php if(!empty($row)):?>
-		<div class="row col-lg-8 border rounded mx-auto mt-5 p-2 shadow-lg">
-			<div class="col-md-4 text-center">
-				<img src="<?=get_image($row['image'])?>" class="img-fluid rounded" style="width: 180px;height:180px;object-fit: cover;">
-				<div>
-
-					<?php if(user('id') == $row['id']):?>
-
->>>>>>> parent of 6ea3835 (mantap)
-						<a href="profile-edit.php">
-							<button class="mx-auto m-1 btn-sm btn btn-primary">Edit</button>
-						</a>
-						<a href="profile-delete.php">
-							<button class="mx-auto m-1 btn-sm btn btn-warning text-white">Delete</button>
-						</a>
-<<<<<<< HEAD
-						<button class="mx-auto m-1 btn btn-warning" onclick="confirmDelete()">Delete</button>
-						<a href="logout.php">
-							<button class="mx-auto m-1 btn btn-info">Logout</button>
-=======
-						<a href="logout.php">
-							<button class="mx-auto m-1 btn-sm btn btn-info text-white">Logout</button>
->>>>>>> parent of 6ea3835 (mantap)
-						</a>
+			<div class="profile-card mx-auto">
+				<div class="row">
+					<div class="col-md-4 text-center">
+						<img src="<?= get_image($row['image']) ?>" class="img-fluid" style="width: 180px; height: 180px; object-fit: cover;">
+						<div class="mt-3">
+							<?php if(user('id') == $row['id']): ?>
+								<a href="profile-edit.php">
+									<button class="btn btn-primary btn-custom">Edit</button>
+								</a>
+								<button class="btn btn-warning btn-custom" onclick="confirmDelete()">Delete</button>
+							<?php endif; ?>
+						</div>
 					</div>
-				</div>
-				<div class="col-md-8">
-					<div class="h2">User Profile</div>
-					<table class="table table-striped">
-						<tr><th colspan="2">User Details:</th></tr>
-						<tr><th><i class="bi bi-envelope"></i> Email</th><td><?= esc($row['email']) ?></td></tr>
-						<tr><th><i class="bi bi-person-circle"></i> First name</th><td><?= esc($row['firstname']) ?></td></tr>
-						<tr><th><i class="bi bi-person-square"></i> Last name</th><td><?= esc($row['lastname']) ?></td></tr>
-						<tr><th><i class="bi bi-person"></i> Username</th><td><?= esc($row['username']) ?></td></tr> <!-- Menampilkan Username -->
-					</table>
+					<div class="col-md-8">
+						<div class="h2">User Profile</div>
+						<table class="table table-striped">
+							<tr><th colspan="2">User Details:</th></tr>
+							<tr><th><i class="bi bi-envelope"></i> Email</th><td><?= esc($row['email']) ?></td></tr>
+							<tr><th><i class="bi bi-person-circle"></i> First name</th><td><?= esc($row['firstname']) ?></td></tr>
+							<tr><th><i class="bi bi-person-square"></i> Last name</th><td><?= esc($row['lastname']) ?></td></tr>
+							<tr><th><i class="bi bi-person"></i> Username</th><td><?= esc($row['username']) ?></td></tr>
+						</table>
+					</div>
 				</div>
 			</div>
 		<?php else: ?>
-			<div class="col-md-8 mx-auto">
-				<h2>Signup</h2>
-				<form method="post" onsubmit="myaction.collect_data(event, 'signup')">
-					<div class="input-group mt-3">
-						<span class="input-group-text"><i class="bi bi-person-circle"></i></span>
-						<input name="firstname" type="text" class="form-control" placeholder="First name" required>
-					</div>
-					<div class="input-group mt-3">
-						<span class="input-group-text"><i class="bi bi-person-square"></i></span>
-						<input name="lastname" type="text" class="form-control" placeholder="Last name" required>
-					</div>
-					<div class="input-group mt-3">
-						<span class="input-group-text"><i class="bi bi-person"></i></span>
-						<input name="username" type="text" class="form-control" placeholder="Username" required>
-					</div>
-					<div class="input-group mt-3">
-						<span class="input-group-text"><i class="bi bi-envelope"></i></span>
-						<input name="email" type="text" class="form-control" placeholder="Email" required>
-					</div>
-					<div class="input-group mt-3">
-						<span class="input-group-text"><i class="bi bi-key"></i></span>
-						<input name="password" type="password" class="form-control" placeholder="Password" required>
-					</div>
-					<div class="input-group mt-3">
-						<span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-						<input name="retype_password" type="password" class="form-control" placeholder="Retype Password" required>
-					</div>
-					<button class="mt-3 btn btn-primary col-12">Signup</button>
-				</form>
-			</div>
+			<div class="text-center alert alert-danger">That profile was not found</div>
+			<a href="index.php">
+				<button class="btn btn-primary m-4">Home</button>
+			</a>
 		<?php endif; ?>
 	</div>
 
-<<<<<<< HEAD
 	<script>
 		function confirmDelete() {
 			if (confirm("Are you sure you want to delete this account?")) {
-				deleteAccount(<?=$row['id']?>);
+				deleteAccount(<?= $row['id'] ?>);
 			}
 		}
 
@@ -191,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POS
 					var response = JSON.parse(ajax.responseText);
 					if (response.success) {
 						alert("Profile deleted successfully!");
-						window.location.href = 'login.php'; // Arahkan ke halaman login setelah penghapusan
+						window.location.href = 'login.php'; 
 					} else {
 						alert("An error occurred: " + response.error);
 					}
@@ -201,7 +171,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POS
 		}
 	</script>
 
-=======
->>>>>>> parent of 6ea3835 (mantap)
 </body>
 </html>
