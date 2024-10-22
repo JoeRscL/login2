@@ -1,11 +1,27 @@
 <?php 
 require 'functions.php';
 
+<<<<<<< HEAD
 // Jika pengguna sudah login, ambil data profil
 if (is_logged_in()) {
 	$id = $_SESSION['PROFILE']['id'];
 	$row = db_query("select * from users where id = :id limit 1", ['id' => $id]);
 	if ($row) {
+=======
+	require 'functions.php';
+
+	if(!is_logged_in())
+	{
+		redirect('login.php');
+	}
+
+	$id = $_GET['id'] ?? $_SESSION['PROFILE']['id'];
+
+	$row = db_query("select * from users where id = :id limit 1",['id'=>$id]);
+
+	if($row)
+	{
+>>>>>>> parent of 6ea3835 (mantap)
 		$row = $row[0];
 	}
 }
@@ -77,18 +93,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POS
 </head>
 <body>
 
+<<<<<<< HEAD
 	<div class="container mt-5">
 		<?php if (isset($row)): ?>
 			<div class="row col-lg-8 border rounded mx-auto mt-5 p-2 shadow-lg">
 				<div class="col-md-4 text-center">
 					<img src="<?= get_image($row['image']) ?>" class="img-fluid rounded" style="width: 180px; height: 180px; object-fit: cover;">
 					<div class="mt-3">
+=======
+	<div class="text-center p-1"><a href="users.php">All users</a></div>
+
+	<?php if(!empty($row)):?>
+		<div class="row col-lg-8 border rounded mx-auto mt-5 p-2 shadow-lg">
+			<div class="col-md-4 text-center">
+				<img src="<?=get_image($row['image'])?>" class="img-fluid rounded" style="width: 180px;height:180px;object-fit: cover;">
+				<div>
+
+					<?php if(user('id') == $row['id']):?>
+
+>>>>>>> parent of 6ea3835 (mantap)
 						<a href="profile-edit.php">
-							<button class="mx-auto m-1 btn btn-custom">Edit</button>
+							<button class="mx-auto m-1 btn-sm btn btn-primary">Edit</button>
 						</a>
+						<a href="profile-delete.php">
+							<button class="mx-auto m-1 btn-sm btn btn-warning text-white">Delete</button>
+						</a>
+<<<<<<< HEAD
 						<button class="mx-auto m-1 btn btn-warning" onclick="confirmDelete()">Delete</button>
 						<a href="logout.php">
 							<button class="mx-auto m-1 btn btn-info">Logout</button>
+=======
+						<a href="logout.php">
+							<button class="mx-auto m-1 btn-sm btn btn-info text-white">Logout</button>
+>>>>>>> parent of 6ea3835 (mantap)
 						</a>
 					</div>
 				</div>
@@ -137,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POS
 		<?php endif; ?>
 	</div>
 
+<<<<<<< HEAD
 	<script>
 		function confirmDelete() {
 			if (confirm("Are you sure you want to delete this account?")) {
@@ -163,5 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['data_type']) && $_POS
 		}
 	</script>
 
+=======
+>>>>>>> parent of 6ea3835 (mantap)
 </body>
 </html>

@@ -1,4 +1,5 @@
 <?php 
+
 	require 'functions.php';
 
 	if(!is_logged_in())
@@ -14,6 +15,7 @@
 	{
 		$row = $row[0];
 	}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -23,23 +25,6 @@
 	<title>Edit Profile</title>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap-icons.css">
-	<style>
-		/* Styling untuk input password dengan ikon */
-		.password-wrapper {
-			position: relative;
-		}
-		.password-wrapper input {
-			padding-right: 40px; /* Memberikan ruang untuk ikon */
-		}
-		.eye-icon {
-			position: absolute;
-			top: 50%;
-			right: 10px;
-			transform: translateY(-50%);
-			cursor: pointer;
-			color: #6c757d; /* Warna ikon */
-		}
-	</style>
 </head>
 <body>
 
@@ -95,23 +80,21 @@
 						
 						<tr><th><i class="bi bi-key"></i> Password</th>
 							<td>
-								<div class="password-wrapper">
-									<input id="password" type="password" class="form-control" name="password" placeholder="Password (leave empty to keep old password)">
-									<i class="bi bi-eye eye-icon" onclick="togglePasswordVisibility('password')"></i>
-								</div>
+								<input type="password" class="form-control" name="password" placeholder="Password (leave empty to keep old password)">
 								<div><small class="js-error js-error-password text-danger"></small></div>
 							</td>
 						</tr>
 						<tr><th><i class="bi bi-key-fill"></i> Retype Password</th>
 							<td>
-								<div class="password-wrapper">
-									<input id="retype_password" type="password" class="form-control" name="retype_password" placeholder="Retype Password">
-									<i class="bi bi-eye eye-icon" onclick="togglePasswordVisibility('retype_password')"></i>
-								</div>
+								<input type="password" class="form-control" name="retype_password" placeholder="Retype Password">
 							</td>
 						</tr>
 
 					</table>
+
+					<div class="progress my-3 d-none">
+					  <div class="progress-bar" role="progressbar" style="width: 50%;" >Working... 25%</div>
+					</div>
 
 					<div class="p-2">
 						
@@ -148,15 +131,6 @@
 
 		image_added = true;
 	}
-
-	function togglePasswordVisibility(passwordFieldId) {
-		const passwordField = document.getElementById(passwordFieldId);
-		if (passwordField.type === 'password') {
-			passwordField.type = 'text'; // Change to text to show password
-		} else {
-			passwordField.type = 'password'; // Change back to password
-		}
-	}
  
 	var myaction  = 
 	{
@@ -170,6 +144,7 @@
 			myform.append('data_type',data_type);
 
 			for (var i = 0; i < inputs.length; i++) {
+
 				myform.append(inputs[i].name, inputs[i].value);
 			}
 
@@ -183,13 +158,14 @@
 
 		send_data: function (form)
 		{
+
 			var ajax = new XMLHttpRequest();
 
-			// Menghapus progress bar
-			// document.querySelector(".progress").classList.remove("d-none");
-			// reset the prog bar
-			// document.querySelector(".progress-bar").style.width = "0%";
-			// document.querySelector(".progress-bar").innerHTML = "Working... 0%";
+			document.querySelector(".progress").classList.remove("d-none");
+
+			//reset the prog bar
+			document.querySelector(".progress-bar").style.width = "0%";
+			document.querySelector(".progress-bar").innerHTML = "Working... 0%";
 
 			ajax.addEventListener('readystatechange', function(){
 
@@ -209,8 +185,8 @@
 			ajax.upload.addEventListener('progress', function(e){
 
 				let percent = Math.round((e.loaded / e.total) * 100);
-				// document.querySelector(".progress-bar").style.width = percent + "%";
-				// document.querySelector(".progress-bar").innerHTML = "Working..." + percent + "%";
+				document.querySelector(".progress-bar").style.width = percent + "%";
+				document.querySelector(".progress-bar").innerHTML = "Working..." + percent + "%";
 			});
 
 			ajax.open('post','ajax.php', true);
